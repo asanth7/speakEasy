@@ -37,5 +37,6 @@ def get_feedback(transcript: str):
     return response.choices[0].message.content
 
 def get_feedback(audio_file):
-    gpt5_feedback = get_feedback(get_transcript(audio_file))
-    return gpt5_feedback
+    transcript = get_transcript(audio_file)
+    gpt5_feedback = get_feedback(transcript)
+    return [transcript, gpt5_feedback]
