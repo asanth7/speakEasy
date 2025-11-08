@@ -1,12 +1,10 @@
-import elevenlabs
 from elevenlabs import ElevenLabs, stream
-from elevenlabs.client import ElevenLabs
 import os
 from dotenv import load_dotenv
+
 load_dotenv()
 
-elevenlabs = ElevenLabs(
-    base_url="https://api.elevenlabs.io",
+client = ElevenLabs(
     api_key=os.getenv("ELEVENLABS_API_KEY"),
 )
 
@@ -18,7 +16,7 @@ elevenlabs = ElevenLabs(
 #     ]
 # )
 
-audio_stream = elevenlabs.text_to_speech.stream(
+audio_stream = client.text_to_speech.stream(
     text="This is a test",
     voice_id="JBFqnCBsd6RMkjVDRZzb",
     model_id="eleven_multilingual_v2"
