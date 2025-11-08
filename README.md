@@ -1,2 +1,2 @@
-# slabs_nova25
-CMU ScottyLabs NOVA Hackathon Project
+# speakEasy
+CMU ScottyLabs NOVA Hackathon Project: Adaptive Public Speaking Assistant
