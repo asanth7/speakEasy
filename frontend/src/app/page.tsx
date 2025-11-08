@@ -68,12 +68,12 @@ export default function Home() {
         <div className="relative z-10 container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-light text-slate-900 mb-6 leading-tight tracking-tight [font-family:var(--font-playfair),serif]">
-              Find Your Calm in the{' '}
-              <span className="italic">Complexity</span>
+              Clarity Starts with How You {' '}
+              <span className="italic">Speak</span>
             </h1>
             
             <p className="text-lg md:text-xl text-slate-700 mb-10 max-w-2xl mx-auto leading-relaxed">
-              Our platform handles the intricate data and workflows so you can stop firefighting and start focusing on what matters.
+              Let this computer give you insights that make your words work for you, so you can focus on mastering your tone, pace, and message.
             </p>
           </div>
         </div>
