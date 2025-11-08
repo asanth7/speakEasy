@@ -1,32 +1,16 @@
+'use client';
+
 import { useState } from 'react';
-import { Header } from './components/Header';
-import { SpeechTypeSelector } from './components/SpeechTypeSelector';
-import { RecordingControls } from './components/RecordingControls';
-import { TranscriptDisplay } from './components/TranscriptDisplay';
-import { FeedbackPanel } from './components/FeedbackPanel';
-import { CameraFeed } from './components/CameraFeed';
-import { AudioPlayback } from './components/AudioPlayback';
+import { Header } from '../../components/Header';
+import { SpeechTypeSelector } from '../../components/SpeechTypeSelector';
+import { RecordingControls } from '../../components/RecordingControls';
+import { TranscriptDisplay } from '../../components/TranscriptDisplay';
+import { FeedbackPanel } from '../../components/FeedbackPanel';
+import { CameraFeed } from '../../components/CameraFeed';
+import { AudioPlayback } from '../../components/AudioPlayback';
+import type { SpeechType, Session } from '../../types';
 
-export type SpeechType = 'public-forum' | 'policy-debate' | 'presentation' | 'ceremony' | 'ted-talk';
-
-export interface Session {
-  id: string;
-  speechType: SpeechType;
-  transcript: string;
-  feedback: {
-    clarity: number;
-    structure: number;
-    fillerWords: string[];
-    suggestions: string[];
-  } | null;
-  improvedDraft: string;
-  visualFeedback: string[];
-  timestamp: Date;
-  duration: number;
-  wordCount: number;
-}
-
-export default function App() {
+export default function Dashboard() {
   const [speechType, setSpeechType] = useState<SpeechType>('presentation');
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState('');
@@ -99,3 +83,4 @@ export default function App() {
     </div>
   );
 }
+
