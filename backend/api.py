@@ -70,49 +70,57 @@ def upload_audio():
         return jsonify({'error': str(e)}), 500
 
 def transcribe_audio_file(file_path: str):
-    """Transcribe audio file using modal_parakeet."""
+    """Transcribe audio file using stt_llm_tts.get_transcript."""
     try:
-        # Import and use modal_parakeet directly
-        from backend.modal_parakeet import transcribe_audio
+        # Import and use get_transcript from stt_llm_tts
+        from backend.stt_llm_tts import get_transcript
         
-        # Use the local entrypoint function
+        # Use the get_transcript function which uses modal_parakeet internally
         # Relative path from project root
         relative_path = os.path.relpath(file_path, PROJECT_ROOT)
-        transcript = transcribe_audio(relative_path)
+        transcript = get_transcript(relative_path)
         return transcript
-    except ImportError:
-        # Fallback to subprocess if direct import doesn't work
+    except ImportError as e:
+        print(f'Error importing stt_llm_tts: {e}')
+        # Fallback to modal_parakeet directly
         try:
+            from backend.modal_parakeet import transcribe_audio
             relative_path = os.path.relpath(file_path, PROJECT_ROOT)
-            result = subprocess.run(
-                ['python', '-m', 'modal', 'run', 'backend.modal_parakeet', '--file-path', relative_path],
-                cwd=PROJECT_ROOT,
-                capture_output=True,
-                text=True,
-                timeout=300  # 5 minute timeout
-            )
-            
-            if result.returncode == 0:
-                # Extract transcript from output
-                output = result.stdout.strip()
-                # Try to parse JSON if it's JSON, otherwise return as text
-                try:
-                    import json
-                    parsed = json.loads(output)
-                    if isinstance(parsed, dict) and 'text' in parsed:
-                        return parsed['text']
-                    return output
-                except:
-                    return output
-            else:
-                print(f'Transcription error: {result.stderr}')
+            transcript = transcribe_audio(relative_path)
+            return transcript
+        except ImportError:
+            # Fallback to subprocess if direct import doesn't work
+            try:
+                relative_path = os.path.relpath(file_path, PROJECT_ROOT)
+                result = subprocess.run(
+                    ['python', '-m', 'modal', 'run', 'backend.modal_parakeet', '--file-path', relative_path],
+                    cwd=PROJECT_ROOT,
+                    capture_output=True,
+                    text=True,
+                    timeout=300  # 5 minute timeout
+                )
+                
+                if result.returncode == 0:
+                    # Extract transcript from output
+                    output = result.stdout.strip()
+                    # Try to parse JSON if it's JSON, otherwise return as text
+                    try:
+                        import json
+                        parsed = json.loads(output)
+                        if isinstance(parsed, dict) and 'text' in parsed:
+                            return parsed['text']
+                        return output
+                    except:
+                        return output
+                else:
+                    print(f'Transcription error: {result.stderr}')
+                    return None
+            except subprocess.TimeoutExpired:
+                print('Transcription timed out')
                 return None
-        except subprocess.TimeoutExpired:
-            print('Transcription timed out')
-            return None
-        except Exception as e:
-            print(f'Error running transcription: {e}')
-            return None
+            except Exception as e:
+                print(f'Error running transcription: {e}')
+                return None
     except Exception as e:
         print(f'Error transcribing audio: {e}')
         return None
