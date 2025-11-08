@@ -78,30 +78,89 @@ export default function Home() {
           </div>
         </div>
 
-        {/* CTA Button - Positioned inside the monitor screen with curvature warp */}
-        <div className="absolute z-10 bottom-[48%] left-1/2 -translate-x-1/2">
-          <Link href="/dashboard">
+        {/* Transparent Clickable Button - Covers entire monitor screen */}
+        <Link 
+          href="/dashboard"
+          className="absolute z-10 cursor-pointer"
+          style={{
+            bottom: '35%',
+            left: 'calc(50% - 250px)',
+            width: '400px',
+            height: '300px',
+            perspective: '600px',
+            transformStyle: 'preserve-3d',
+          }}
+        >
+          <div
+            style={{
+              transform: 'perspective(600px) rotateX(25deg)',
+              transformStyle: 'preserve-3d',
+              width: '100%',
+              height: '100%',
+            }}
+          >
             <div
+              className="w-full h-full bg-transparent"
               style={{
-                transform: 'perspective(400px) rotateX(20deg)',
-                transformStyle: 'preserve-3d',
-                clipPath: 'ellipse(90% 75% at 50% 50%)',
+                transform: 'skew(-2deg,-4deg)',
+                transformOrigin: 'center center',
+                clipPath: 'url(#barrel-curve)',
+              }}
+            />
+          </div>
+        </Link>
+
+        {/* Text Element - Absolutely positioned, separate from button */}
+        <div
+          className="absolute z-10 pointer-events-none"
+          style={{
+            bottom: '36.5%',
+            left: 'calc(50% - 268px)',
+            perspective: '600px',
+            transformStyle: 'preserve-3d',
+          }}
+        >
+          <div
+            style={{
+              transform: 'perspective(600px) rotateX(20deg)',
+              transformStyle: 'preserve-3d',
+            }}
+          >
+            <svg width="0" height="0" style={{ position: 'absolute' }}>
+              <defs>
+                <clipPath id="barrel-curve" clipPathUnits="objectBoundingBox">
+                  <path d="M 0.08 0.18 
+                           C 0.08 0.18, 0.25 0.12, 0.5 0.06
+                           C 0.75 0.12, 0.92 0.18, 0.92 0.18
+                           L 0.92 0.82
+                           C 0.92 0.82, 0.75 0.88, 0.5 0.94
+                           C 0.25 0.88, 0.08 0.82, 0.08 0.82
+                           Z" />
+                </clipPath>
+              </defs>
+            </svg>
+            <div
+              className="text-2xl font-semibold flex items-center justify-center [font-family:var(--font-geist-mono),monospace]"
+              style={{
+                width: '400px',
+                height: '300px',
+                transform: 'skew(-2deg,-4deg)',
+                transformOrigin: 'center center',
+                clipPath: 'url(#barrel-curve)',
+                color: 'rgba(251, 225, 203, 0.7)', // Transparent warm yellowish-orange
+                textShadow: `
+                  0 0 10px rgba(251, 225, 203, 0.5),
+                  0 0 20px rgba(251, 225, 203, 0.3),
+                  0 2px 4px rgba(0, 0, 0, 0.3),
+                  0 0 0 1px rgba(251, 225, 203, 0.2)
+                `,
+                backdropFilter: 'blur(1px)',
+                WebkitBackdropFilter: 'blur(1px)',
               }}
             >
-              <Button 
-                size="lg" 
-                className="bg-slate-900 text-white hover:bg-slate-800 text-base px-8 py-6 rounded-lg min-w-[200px] shadow-2xl"
-                style={{
-                  transform: 'scaleY(0.75) scaleX(0.92)',
-                  transformOrigin: 'center center',
-                  filter: 'drop-shadow(0 8px 16px rgba(0, 0, 0, 0.5))',
-                  borderRadius: '12px',
-                }}
-              >
-                Get Started
-              </Button>
+              Get Started
             </div>
-          </Link>
+          </div>
         </div>
       </div>
 
