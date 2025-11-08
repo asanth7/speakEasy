@@ -5,7 +5,8 @@ import queue
 
 SAMPLE_RATE = 16000
 CHANNELS = 1
-OUTPUT_FILE = "audiotests/user_recording.wav"
+# NOTE: Currently overwrites the existing audio file --> change so that we store all audio files for users to listen to
+OUTPUT_FILE = "audiotests/user_recording.wav" 
 
 q = queue.Queue()
 
