@@ -7,6 +7,7 @@ import numpy as np
 import base64
 import json
 import urllib.request
+import ssl
 import os
 import time
 from io import BytesIO
@@ -161,7 +162,10 @@ After assessing each category, what 2–3 concrete suggestions would you give to
     )
     
     try:
-        with urllib.request.urlopen(req) as response:
+        # Create SSL context for HTTPS requests (fixes SSL certificate verification errors)
+        ssl_context = ssl._create_unverified_context()
+        
+        with urllib.request.urlopen(req, context=ssl_context) as response:
             assert response.getcode() == 200, f"HTTP {response.getcode()}"
             result = json.loads(response.read().decode())
             
@@ -243,6 +247,8 @@ if __name__ == "__main__":
     
     if len(sys.argv) > 1:
         modal_url = sys.argv[1]
+        print(f"DEBUG: Using Modal URL: '{modal_url}'")
+        print(f"DEBUG: URL length: {len(modal_url)}")
     else:
         print("Usage: python process_video_camera.py <modal_endpoint_url> [output_file.json]")
         print("\nTo get the endpoint URL:")
@@ -261,7 +267,7 @@ if __name__ == "__main__":
     output_file = sys.argv[2] if len(sys.argv) > 2 else None
     
     question = """
-You are an expert debate coach in ENGLISH (output in ENGLISH). Based on the user’s video input, can you evaluate their delivery for each frame using the following categories, giving a rating of "high", "medium", or "low" for each?
+You are an expert debate coach in ENGLISH (output in ENGLISH). Based on the user's video input, can you evaluate their delivery for each frame using the following categories, giving a rating of "high", "medium", or "low" for each?
 
 - Posture: Are they standing confidently, balanced, and upright, or do they lean, slouch, sway, or shift excessively?
 - Hand Gestures: Are gestures natural, supportive, and purposeful, or are they distracting, repetitive, rigid, or minimal?
@@ -294,4 +300,3 @@ Each field should contain the rating "high", "medium", or "low" for that frame.
 After evaluating all frames, can you also give 2–3 specific and actionable suggestions to help improve their delivery, keeping the suggestions practical, short, and realistic?"""
     
     capture_and_analyze(modal_url, question=question, output_file=output_file)
-    
