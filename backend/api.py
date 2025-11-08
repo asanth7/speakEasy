@@ -50,20 +50,37 @@ def upload_audio():
         # Save the file
         audio_file.save(filepath)
         
-        # Transcribe the audio using modal_parakeet
+        # Get transcript and feedback using stt_llm_tts.get_feedback
         transcript = None
+        feedback = None
         try:
-            transcript = transcribe_audio_file(filepath)
+            from backend.stt_llm_tts import get_feedback
+            
+            # Relative path from project root
+            relative_path = os.path.relpath(filepath, PROJECT_ROOT)
+            result = get_feedback(relative_path)
+            
+            if result and isinstance(result, list) and len(result) >= 2:
+                transcript = result[0]
+                feedback = result[1]
+            else:
+                # Fallback: just get transcript if get_feedback doesn't work as expected
+                transcript = result[0] if result and len(result) > 0 else None
         except Exception as e:
-            print(f'Error transcribing audio: {e}')
-            # Continue even if transcription fails
+            print(f'Error getting feedback: {e}')
+            # Try to at least get transcript
+            try:
+                transcript = transcribe_audio_file(filepath)
+            except Exception as e2:
+                print(f'Error transcribing audio: {e2}')
         
         return jsonify({
             'success': True,
             'filename': filename,
             'filepath': filepath,
             'message': f'Audio saved to {filepath}',
-            'transcript': transcript
+            'transcript': transcript,
+            'feedback': feedback
         }), 200
         
     except Exception as e:
@@ -72,55 +89,75 @@ def upload_audio():
 def transcribe_audio_file(file_path: str):
     """Transcribe audio file using stt_llm_tts.get_transcript."""
     try:
-        # Import and use get_transcript from stt_llm_tts
-        from backend.stt_llm_tts import get_transcript
-        
-        # Use the get_transcript function which uses modal_parakeet internally
-        # Relative path from project root
+        # Use subprocess to call modal run, which will output logs + transcript
         relative_path = os.path.relpath(file_path, PROJECT_ROOT)
-        transcript = get_transcript(relative_path)
-        return transcript
-    except ImportError as e:
-        print(f'Error importing stt_llm_tts: {e}')
-        # Fallback to modal_parakeet directly
-        try:
-            from backend.modal_parakeet import transcribe_audio
-            relative_path = os.path.relpath(file_path, PROJECT_ROOT)
-            transcript = transcribe_audio(relative_path)
-            return transcript
-        except ImportError:
-            # Fallback to subprocess if direct import doesn't work
-            try:
-                relative_path = os.path.relpath(file_path, PROJECT_ROOT)
-                result = subprocess.run(
-                    ['python', '-m', 'modal', 'run', 'backend.modal_parakeet', '--file-path', relative_path],
-                    cwd=PROJECT_ROOT,
-                    capture_output=True,
-                    text=True,
-                    timeout=300  # 5 minute timeout
-                )
-                
-                if result.returncode == 0:
-                    # Extract transcript from output
-                    output = result.stdout.strip()
-                    # Try to parse JSON if it's JSON, otherwise return as text
-                    try:
-                        import json
-                        parsed = json.loads(output)
-                        if isinstance(parsed, dict) and 'text' in parsed:
-                            return parsed['text']
-                        return output
-                    except:
-                        return output
-                else:
-                    print(f'Transcription error: {result.stderr}')
-                    return None
-            except subprocess.TimeoutExpired:
-                print('Transcription timed out')
-                return None
-            except Exception as e:
-                print(f'Error running transcription: {e}')
-                return None
+        result = subprocess.run(
+            ['python', '-m', 'modal', 'run', 'backend.modal_parakeet', '--file-path', relative_path],
+            cwd=PROJECT_ROOT,
+            capture_output=True,
+            text=True,
+            timeout=300  # 5 minute timeout
+        )
+        
+        if result.returncode == 0:
+            # Parse output to extract just the transcript text
+            # The transcript is printed after all Modal logs
+            output_lines = result.stdout.strip().split('\n')
+            
+            # Find the line after "Stopping app - local entrypoint completed."
+            # or after "✓ App completed" - that should be the transcript
+            transcript = None
+            found_completion = False
+            
+            for i, line in enumerate(output_lines):
+                line = line.strip()
+                # Look for completion markers
+                if 'Stopping app' in line and 'local entrypoint completed' in line:
+                    found_completion = True
+                    # The transcript should be on the next non-empty line
+                    for j in range(i + 1, len(output_lines)):
+                        next_line = output_lines[j].strip()
+                        if next_line and not next_line.startswith('✓'):
+                            transcript = next_line
+                            break
+                    break
+                elif line.startswith('✓ App completed'):
+                    found_completion = True
+                    # The transcript should be on the next non-empty line
+                    for j in range(i + 1, len(output_lines)):
+                        next_line = output_lines[j].strip()
+                        if next_line:
+                            transcript = next_line
+                            break
+                    break
+            
+            # If we didn't find completion marker, look for the last line that's not a Modal log
+            if not transcript:
+                for line in reversed(output_lines):
+                    line = line.strip()
+                    if not line:
+                        continue
+                    # Skip Modal-specific lines
+                    if (line.startswith('✓') or line.startswith('├──') or line.startswith('└──') or
+                        line.startswith('╭') or line.startswith('╰') or line.startswith('│') or
+                        'Modal' in line or 'View run at' in line or 'Initialized' in line or
+                        'Created' in line or '/usr/local' in line or 'site-packages' in line or
+                        'Warning' in line or 'Deprecation' in line or 'Device set to' in line or
+                        'Stopping app' in line or 'FutureWarning' in line or 'warnings.warn' in line or
+                        'bug fix' in line or 'multilingual Whisper' in line or
+                        'Passing a tuple' in line or 'EncoderDecoderCache' in line):
+                        continue
+                    # This should be the transcript
+                    transcript = line
+                    break
+            
+            return transcript if transcript else None
+        else:
+            print(f'Transcription error: {result.stderr}')
+            return None
+    except subprocess.TimeoutExpired:
+        print('Transcription timed out')
+        return None
     except Exception as e:
         print(f'Error transcribing audio: {e}')
         return None
