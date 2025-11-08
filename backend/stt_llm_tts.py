@@ -24,7 +24,7 @@ Return your response as a text string with all this information."""
 def get_transcript(file_path: str = "audiotests/user_recording.wav"):
     return transcribe_audio(file_path)
 
-def get_feedback(transcript: str):
+def get_feedback_from_transcript(transcript: str):
     # Pass transcribed output to ChatGPT 5.1 for some feedback on speech content, structure, and style
     print("Calling ChatGPT 5 for feedback...")
     response = client.chat.completions.create(
@@ -37,6 +37,7 @@ def get_feedback(transcript: str):
     return response.choices[0].message.content
 
 def get_feedback(audio_file):
+    """Get transcript and feedback from audio file. Returns [transcript, feedback]."""
     transcript = get_transcript(audio_file)
-    gpt5_feedback = get_feedback(transcript)
+    gpt5_feedback = get_feedback_from_transcript(transcript)
     return [transcript, gpt5_feedback]

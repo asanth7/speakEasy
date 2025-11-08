@@ -26,6 +26,7 @@ export default function Dashboard() {
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [audioFilename, setAudioFilename] = useState<string | null>(null);
   const [transcript, setTranscript] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<string | null>(null);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -163,16 +164,19 @@ export default function Dashboard() {
               const result = await response.json();
               console.log('WAV file saved:', result.message);
               
-              // Update filename and transcript
+              // Update filename, transcript, and feedback
               setAudioFilename(result.filename);
               setTranscript(result.transcript || null);
+              setFeedback(result.feedback || null);
               
               // Show transcription status
               setIsTranscribing(false);
-              if (result.transcript) {
+              if (result.feedback) {
+                console.log('Feedback received');
+              } else if (result.transcript) {
                 console.log('Transcript received:', result.transcript);
               } else {
-                console.log('No transcript available');
+                console.log('No transcript or feedback available');
               }
             } else {
               setIsTranscribing(false);
@@ -239,6 +243,7 @@ export default function Dashboard() {
     setAudioUrl(null);
     setAudioFilename(null);
     setTranscript(null);
+    setFeedback(null);
     setIsTranscribing(false);
     setIsPlaying(false);
     setCurrentTime(0);
@@ -413,22 +418,22 @@ export default function Dashboard() {
                   )}
                 </div>
 
-                {/* Transcript Widget */}
+                {/* Feedback Widget */}
                 <div className="bg-[#FFFBF0] rounded-xl border border-[#E5E4E2] shadow-sm p-6">
-                  <h2 className="text-lg font-semibold text-[#101010] mb-4">Transcript</h2>
+                  <h2 className="text-lg font-semibold text-[#101010] mb-4">Feedback</h2>
                   {isTranscribing ? (
                     <div className="flex items-center gap-2">
                       <div className="w-4 h-4 border-2 border-[#E05038] border-t-transparent rounded-full animate-spin"></div>
-                      <p className="text-sm text-[#4A4A4A]">Transcribing audio...</p>
+                      <p className="text-sm text-[#4A4A4A]">Analyzing speech and generating feedback...</p>
                     </div>
-                  ) : transcript ? (
+                  ) : feedback ? (
                     <div className="space-y-2">
                       <p className="text-sm text-[#4A4A4A] leading-relaxed whitespace-pre-wrap">
-                        {transcript}
+                        {feedback}
                       </p>
                     </div>
                   ) : (
-                    <p className="text-sm text-[#4A4A4A]">Transcription will appear here...</p>
+                    <p className="text-sm text-[#4A4A4A]">Feedback will appear here...</p>
                   )}
                 </div>
               </div>
