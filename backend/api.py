@@ -3,6 +3,7 @@ from flask_cors import CORS
 import os
 import re
 from glob import glob
+import subprocess
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend requests
@@ -49,15 +50,72 @@ def upload_audio():
         # Save the file
         audio_file.save(filepath)
         
+        # Transcribe the audio using modal_parakeet
+        transcript = None
+        try:
+            transcript = transcribe_audio_file(filepath)
+        except Exception as e:
+            print(f'Error transcribing audio: {e}')
+            # Continue even if transcription fails
+        
         return jsonify({
             'success': True,
             'filename': filename,
             'filepath': filepath,
-            'message': f'Audio saved to {filepath}'
+            'message': f'Audio saved to {filepath}',
+            'transcript': transcript
         }), 200
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+def transcribe_audio_file(file_path: str):
+    """Transcribe audio file using modal_parakeet."""
+    try:
+        # Import and use modal_parakeet directly
+        from backend.modal_parakeet import transcribe_audio
+        
+        # Use the local entrypoint function
+        # Relative path from project root
+        relative_path = os.path.relpath(file_path, PROJECT_ROOT)
+        transcript = transcribe_audio(relative_path)
+        return transcript
+    except ImportError:
+        # Fallback to subprocess if direct import doesn't work
+        try:
+            relative_path = os.path.relpath(file_path, PROJECT_ROOT)
+            result = subprocess.run(
+                ['python', '-m', 'modal', 'run', 'backend.modal_parakeet', '--file-path', relative_path],
+                cwd=PROJECT_ROOT,
+                capture_output=True,
+                text=True,
+                timeout=300  # 5 minute timeout
+            )
+            
+            if result.returncode == 0:
+                # Extract transcript from output
+                output = result.stdout.strip()
+                # Try to parse JSON if it's JSON, otherwise return as text
+                try:
+                    import json
+                    parsed = json.loads(output)
+                    if isinstance(parsed, dict) and 'text' in parsed:
+                        return parsed['text']
+                    return output
+                except:
+                    return output
+            else:
+                print(f'Transcription error: {result.stderr}')
+                return None
+        except subprocess.TimeoutExpired:
+            print('Transcription timed out')
+            return None
+        except Exception as e:
+            print(f'Error running transcription: {e}')
+            return None
+    except Exception as e:
+        print(f'Error transcribing audio: {e}')
+        return None
 
 @app.route('/api/health', methods=['GET'])
 def health():

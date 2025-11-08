@@ -11,7 +11,10 @@ import {
   FileText,
   Search,
   User,
-  Sparkles
+  Sparkles,
+  Play,
+  Pause,
+  Volume2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -19,8 +22,17 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 export default function Dashboard() {
   const [isRecording, setIsRecording] = useState(false);
   const [duration, setDuration] = useState(0);
+  const [hasRecording, setHasRecording] = useState(false);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [audioFilename, setAudioFilename] = useState<string | null>(null);
+  const [transcript, setTranscript] = useState<string | null>(null);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [audioDuration, setAudioDuration] = useState(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const chunksRef = useRef<Blob[]>([]);
 
   useEffect(() => {
@@ -40,6 +52,17 @@ export default function Dashboard() {
       }
     };
   }, [isRecording]);
+
+  useEffect(() => {
+    if (audioUrl && audioRef.current) {
+      audioRef.current.src = audioUrl;
+      audioRef.current.onloadedmetadata = () => {
+        if (audioRef.current) {
+          setAudioDuration(audioRef.current.duration);
+        }
+      };
+    }
+  }, [audioUrl]);
 
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -119,6 +142,7 @@ export default function Dashboard() {
           const wavBlob = audioBufferToWav(audioBuffer);
           
           // Send to backend API
+          setIsTranscribing(true);
           const formData = new FormData();
           formData.append('audio', wavBlob, 'recording.wav');
           
@@ -130,8 +154,23 @@ export default function Dashboard() {
           if (response.ok) {
             const result = await response.json();
             console.log('WAV file saved:', result.message);
-            alert(`Audio saved successfully: ${result.filename}`);
+            
+            // Create URL for playback
+            const url = URL.createObjectURL(wavBlob);
+            setAudioUrl(url);
+            setAudioFilename(result.filename);
+            setTranscript(result.transcript || null);
+            setHasRecording(true);
+            
+            // Show transcription status
+            setIsTranscribing(false);
+            if (result.transcript) {
+              console.log('Transcript received:', result.transcript);
+            } else {
+              console.log('No transcript available');
+            }
           } else {
+            setIsTranscribing(false);
             const error = await response.json();
             console.error('Error uploading audio:', error);
             alert(`Error saving audio: ${error.error || 'Unknown error'}`);
@@ -157,6 +196,44 @@ export default function Dashboard() {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
+    }
+  };
+
+  const togglePlayback = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  const handleTimeUpdate = () => {
+    if (audioRef.current) {
+      setCurrentTime(audioRef.current.currentTime);
+    }
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleNewSpeech = () => {
+    setHasRecording(false);
+    setAudioUrl(null);
+    setAudioFilename(null);
+    setTranscript(null);
+    setIsTranscribing(false);
+    setIsPlaying(false);
+    setCurrentTime(0);
+    setAudioDuration(0);
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = '';
     }
   };
 
@@ -190,9 +267,9 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#FAF9F5] flex">
+    <div className="min-h-screen bg-[#FFFBF0] flex">
       {/* Left Sidebar */}
-      <aside className="w-64 bg-[#FAF9F5] border-r border-[#E5E4E2] flex flex-col">
+      <aside className="w-64 bg-[#FFFBF0] border-r border-[#E5E4E2] flex flex-col">
         {/* Logo */}
         <div className="p-4 border-b border-[#E5E4E2]">
           <Link href="/" className="text-xl font-semibold text-[#101010] hover:opacity-80 transition-opacity">
@@ -202,7 +279,10 @@ export default function Dashboard() {
 
         {/* Primary Navigation */}
         <div className="p-4 space-y-2">
-          <Button className="w-full justify-start bg-[#E05038] hover:bg-[#C07050] text-white">
+          <Button 
+            onClick={handleNewSpeech}
+            className="w-full justify-start bg-[#E05038] hover:bg-[#C07050] text-white"
+          >
             <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center mr-2">
               <Plus className="w-4 h-4" />
             </div>
@@ -218,7 +298,7 @@ export default function Dashboard() {
               <a
                 key={index}
                 href="#"
-                className="block px-3 py-2 text-sm text-[#101010] hover:bg-[#FAF9F5] rounded-lg transition-colors truncate"
+                className="block px-3 py-2 text-sm text-[#101010] hover:bg-[#FFFBF0] rounded-lg transition-colors truncate"
               >
                 {speech}
               </a>
@@ -230,7 +310,7 @@ export default function Dashboard() {
         <div className="p-4 border-t border-[#E5E4E2]">
           <div className="flex items-center gap-3">
             <Avatar className="w-10 h-10">
-              <AvatarFallback className="bg-[#FAF9F5] text-[#101010]">
+              <AvatarFallback className="bg-[#FFFBF0] text-[#101010]">
                 ZG
               </AvatarFallback>
             </Avatar>
@@ -245,72 +325,171 @@ export default function Dashboard() {
 
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col">
-        <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
-          {/* Greeting */}
-          <div className="w-full max-w-3xl mb-8">
-            <div className="flex items-center gap-2 mb-4">
-              <Sparkles className="w-5 h-5 text-[#E05038]" />
-              <h1 className="text-4xl font-semibold text-[#101010]">
-                Good afternoon, Zhiyuan
-              </h1>
-            </div>
+        {hasRecording ? (
+          /* Dashboard View */
+          <div className="flex-1 p-6">
+            <div className="max-w-7xl mx-auto">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-[#E05038]" />
+                  <h1 className="text-2xl font-semibold text-[#101010]">
+                    Recording Dashboard
+                  </h1>
+                </div>
+                <Button
+                  onClick={handleNewSpeech}
+                  className="bg-[#E05038] hover:bg-[#C07050] text-white"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  New Speech
+                </Button>
+              </div>
 
-            {/* Recording Button (replaces text input) */}
-            <div className="relative mb-6">
-              <div className="bg-[#FAF9F5] rounded-xl shadow-sm border border-[#E5E4E2] p-4">
-                <div className="flex items-center justify-center min-h-[60px]">
-                  {!isRecording ? (
-                    <Button
-                      onClick={startRecording}
-                      className="w-16 h-16 rounded-full bg-[#E05038] hover:bg-[#C07050] text-white shadow-md hover:shadow-lg transition-all"
-                      size="icon"
-                    >
-                      <Mic className="w-6 h-6" />
-                    </Button>
-                  ) : (
-                    <div className="flex flex-col items-center gap-3">
-                      <Button
-                        onClick={stopRecording}
-                        className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 text-white shadow-md hover:shadow-lg transition-all"
-                        size="icon"
-                      >
-                        <Square className="w-6 h-6" />
-                      </Button>
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                        <span className="text-sm text-[#4A4A4A] font-mono">{formatDuration(duration)}</span>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Audio Playback Widget */}
+                <div className="bg-[#FFFBF0] rounded-xl border border-[#E5E4E2] shadow-sm p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <Volume2 className="w-5 h-5 text-[#E05038]" />
+                    <h2 className="text-lg font-semibold text-[#101010]">Audio Playback</h2>
+                  </div>
+                  
+                  {audioUrl && (
+                    <>
+                      <audio
+                        ref={audioRef}
+                        src={audioUrl}
+                        onTimeUpdate={handleTimeUpdate}
+                        onEnded={() => setIsPlaying(false)}
+                        className="hidden"
+                      />
+                      
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-4">
+                          <Button
+                            onClick={togglePlayback}
+                            className="w-12 h-12 rounded-full bg-[#E05038] hover:bg-[#C07050] text-white"
+                            size="icon"
+                          >
+                            {isPlaying ? (
+                              <Pause className="w-5 h-5" />
+                            ) : (
+                              <Play className="w-5 h-5" />
+                            )}
+                          </Button>
+                          
+                          <div className="flex-1">
+                            <div className="w-full bg-[#E5E4E2] rounded-full h-2 mb-2">
+                              <div
+                                className="bg-[#E05038] h-2 rounded-full transition-all"
+                                style={{
+                                  width: audioDuration > 0 ? `${(currentTime / audioDuration) * 100}%` : '0%'
+                                }}
+                              />
+                            </div>
+                            <div className="flex justify-between text-xs text-[#4A4A4A]">
+                              <span>{formatTime(currentTime)}</span>
+                              <span>{formatTime(audioDuration)}</span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="text-sm text-[#4A4A4A]">
+                          <p className="font-medium">File: {audioFilename}</p>
+                        </div>
                       </div>
+                    </>
+                  )}
+                </div>
+
+                {/* Transcript Widget */}
+                <div className="bg-[#FFFBF0] rounded-xl border border-[#E5E4E2] shadow-sm p-6">
+                  <h2 className="text-lg font-semibold text-[#101010] mb-4">Transcript</h2>
+                  {isTranscribing ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-[#E05038] border-t-transparent rounded-full animate-spin"></div>
+                      <p className="text-sm text-[#4A4A4A]">Transcribing audio...</p>
                     </div>
+                  ) : transcript ? (
+                    <div className="space-y-2">
+                      <p className="text-sm text-[#4A4A4A] leading-relaxed whitespace-pre-wrap">
+                        {transcript}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-[#4A4A4A]">Transcription will appear here...</p>
                   )}
                 </div>
               </div>
             </div>
+          </div>
+        ) : (
+          /* Recording View */
+          <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
+            <div className="w-full max-w-3xl mb-8">
+              <div className="flex items-center gap-2 mb-4">
+                <Sparkles className="w-5 h-5 text-[#E05038]" />
+                <h1 className="text-4xl font-semibold text-[#101010]">
+                  Good afternoon, Zhiyuan
+                </h1>
+              </div>
 
-            {/* Project Setup Section */}
-            <div className="mt-12">
-              <h2 className="text-xl font-semibold text-[#101010] mb-6">
-                Set up Speakeasy for your classes, career, and research
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {projectCards.map((card, index) => {
-                  const Icon = card.icon;
-                  return (
-                    <div
-                      key={index}
-                      className="bg-[#FAF9F5] rounded-xl p-6 border border-[#E5E4E2] shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-                    >
-                      <div className="w-12 h-12 rounded-lg border-2 border-[#E5E4E2] flex items-center justify-center mb-4">
-                        <Icon className="w-6 h-6 text-[#4A4A4A]" />
+              {/* Recording Button */}
+              <div className="relative mb-6">
+                <div className="bg-[#FFFBF0] rounded-xl shadow-sm border border-[#E5E4E2] p-4">
+                  <div className="flex items-center justify-center min-h-[60px]">
+                    {!isRecording ? (
+                      <Button
+                        onClick={startRecording}
+                        className="w-16 h-16 rounded-full bg-[#E05038] hover:bg-[#C07050] text-white shadow-md hover:shadow-lg transition-all"
+                        size="icon"
+                      >
+                        <Mic className="w-6 h-6" />
+                      </Button>
+                    ) : (
+                      <div className="flex flex-col items-center gap-3">
+                        <Button
+                          onClick={stopRecording}
+                          className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 text-white shadow-md hover:shadow-lg transition-all"
+                          size="icon"
+                        >
+                          <Square className="w-6 h-6" />
+                        </Button>
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                          <span className="text-sm text-[#4A4A4A] font-mono">{formatDuration(duration)}</span>
+                        </div>
                       </div>
-                      <h3 className="text-lg font-semibold text-[#101010] mb-2">{card.title}</h3>
-                      <p className="text-sm text-[#4A4A4A]">{card.description}</p>
-                    </div>
-                  );
-                })}
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Project Setup Section */}
+              <div className="mt-12">
+                <h2 className="text-xl font-semibold text-[#101010] mb-6">
+                  Set up Speakeasy for your classes, career, and research
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {projectCards.map((card, index) => {
+                    const Icon = card.icon;
+                    return (
+                      <div
+                        key={index}
+                        className="bg-[#FFFBF0] rounded-xl p-6 border border-[#E5E4E2] shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                      >
+                        <div className="w-12 h-12 rounded-lg border-2 border-[#E5E4E2] flex items-center justify-center mb-4">
+                          <Icon className="w-6 h-6 text-[#4A4A4A]" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-[#101010] mb-2">{card.title}</h3>
+                        <p className="text-sm text-[#4A4A4A]">{card.description}</p>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
       </main>
     </div>
   );
