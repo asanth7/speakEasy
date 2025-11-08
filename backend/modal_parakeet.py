@@ -1,6 +1,9 @@
 from typing import Optional
 
 import modal
+from pathlib import Path
+import tempfile
+import ffmpeg
 
 MODEL_DIR = "/model"
 MODEL_NAME = "openai/whisper-large-v3"
@@ -8,7 +11,9 @@ MODEL_REVISION = "afda370583db9c5359511ed5d989400a6199dfe1"
 
 image = (
     modal.Image.debian_slim(python_version="3.11")
+    .apt_install("ffmpeg")                 
     .pip_install(
+        "ffmpeg-python",
         "torch==2.5.1",
         "transformers==4.47.1",
         "hf-transfer==0.1.8",
@@ -18,7 +23,6 @@ image = (
         "accelerate==1.2.1",
         "datasets==3.2.0",
     )
-    # Use the barebones `hf-transfer` package for maximum download speeds. No progress bar, but expect 700MB/s.
     .env({"HF_HUB_ENABLE_HF_TRANSFER": "1", "HF_HUB_CACHE": MODEL_DIR})
 )
 
@@ -50,14 +54,19 @@ class Model:
             device="cuda",
         )
 
+    # @modal.method()
+    # def transcribe_file(self, file_path: str):
+    #     return self.pipeline(file_path)
     @modal.method()
-    def transcribe_file(self, file_path: str):
-        return self.pipeline(file_path)
-
+    def transcribe_bytes(self, wav_bytes: bytes):
+        with tempfile.NamedTemporaryFile(suffix=".wav") as tmp:
+            tmp.write(wav_bytes)
+            tmp.flush()
+            return self.pipeline(tmp.name)
 
 @app.local_entrypoint()
-def main(file_path: str = "audiotests/user_recording.wav"):
-    model = Model()
-    result = model.transcribe_file.remote(file_path)
-    print("Transcript:", result["text"])
+def transcribe_audio(file_path: str = "audiotests/user_recording.wav"):
+    wav_bytes = Path(file_path).read_bytes()
+    result = Model().transcribe_bytes.remote(wav_bytes)
+    return result["text"]
 
