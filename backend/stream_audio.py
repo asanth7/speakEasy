@@ -26,3 +26,5 @@ with sf.SoundFile(OUTPUT_FILE, mode='w', samplerate=SAMPLE_RATE,
                 f.write(q.get())
         except KeyboardInterrupt:
             print("\nRecording stopped.")
+
+
