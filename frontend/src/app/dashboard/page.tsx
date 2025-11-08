@@ -5,20 +5,11 @@ import Link from 'next/link';
 import { 
   Mic, 
   Square, 
-  MessageSquare, 
-  Folder, 
-  Grid3x3, 
-  Code, 
   Plus, 
-  ChevronRight, 
   ChevronDown,
   Brain,
   FileText,
   Search,
-  PenTool,
-  GraduationCap,
-  Coffee,
-  Ghost,
   User,
   Sparkles
 } from 'lucide-react';
@@ -91,23 +82,15 @@ export default function Dashboard() {
     }
   };
 
-  const recentItems = [
-    "From Chile to San Francisco: chasi...",
-    "Dad's American dream shaped my ...",
-    "Untitled",
-    "Debugging A* Algorithm for Grid ...",
-    "Analyzing Soccer Performance Data",
-    "Untitled",
-    "Contribution Essay on Doom-Scro...",
-    "Verifying Capacitor Circuit Behavior"
-  ];
-
-  const actionButtons = [
-    { icon: PenTool, label: 'Write' },
-    { icon: GraduationCap, label: 'Learn' },
-    { icon: Code, label: 'Code' },
-    { icon: Coffee, label: 'Life stuff' },
-    { icon: Ghost, label: "Claude's choice" }
+  const recentSpeeches = [
+    "Climate change speech",
+    "Artificial intelligence speech",
+    "Leadership speech",
+    "Education reform speech",
+    "Entrepreneurship speech",
+    "Mental health speech",
+    "Innovation speech",
+    "Diversity speech"
   ];
 
   const projectCards = [
@@ -145,43 +128,21 @@ export default function Dashboard() {
             <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center mr-2">
               <Plus className="w-4 h-4" />
             </div>
-            New chat
+            New Speech
           </Button>
-
-          <nav className="space-y-1 mt-4">
-            <a href="#" className="flex items-center gap-3 px-3 py-2 text-[#101010] hover:bg-[#F5F4F0] rounded-lg transition-colors">
-              <MessageSquare className="w-5 h-5" />
-              <span>Chats</span>
-            </a>
-            <a href="#" className="flex items-center gap-3 px-3 py-2 text-[#101010] hover:bg-[#F5F4F0] rounded-lg transition-colors">
-              <Folder className="w-5 h-5" />
-              <span>Projects</span>
-            </a>
-            <a href="#" className="flex items-center gap-3 px-3 py-2 text-[#101010] hover:bg-[#F5F4F0] rounded-lg transition-colors">
-              <Grid3x3 className="w-5 h-5" />
-              <span>Artifacts</span>
-            </a>
-            <a href="#" className="flex items-center justify-between px-3 py-2 text-[#101010] hover:bg-[#F5F4F0] rounded-lg transition-colors">
-              <div className="flex items-center gap-3">
-                <Code className="w-5 h-5" />
-                <span>Code</span>
-              </div>
-              <ChevronRight className="w-4 h-4" />
-            </a>
-          </nav>
         </div>
 
-        {/* Recents Section */}
+        {/* Recent Speeches Section */}
         <div className="flex-1 overflow-y-auto p-4">
-          <h3 className="text-sm font-semibold text-[#101010] mb-3">Recents</h3>
+          <h3 className="text-sm font-semibold text-[#101010] mb-3">Recent Speeches</h3>
           <div className="space-y-1">
-            {recentItems.map((item, index) => (
+            {recentSpeeches.map((speech, index) => (
               <a
                 key={index}
                 href="#"
-                className="block px-3 py-2 text-sm text-[#101010] hover:bg-[#F5F4F0] rounded-lg transition-colors truncate"
+                className="block px-3 py-2 text-sm text-[#101010] hover:bg-[#FAF9F5] rounded-lg transition-colors truncate"
               >
-                {item}
+                {speech}
               </a>
             ))}
           </div>
@@ -191,7 +152,7 @@ export default function Dashboard() {
         <div className="p-4 border-t border-[#E5E4E2]">
           <div className="flex items-center gap-3">
             <Avatar className="w-10 h-10">
-              <AvatarFallback className="bg-[#F5F4F0] text-[#101010]">
+              <AvatarFallback className="bg-[#FAF9F5] text-[#101010]">
                 ZG
               </AvatarFallback>
             </Avatar>
@@ -218,7 +179,7 @@ export default function Dashboard() {
 
             {/* Recording Button (replaces text input) */}
             <div className="relative mb-6">
-              <div className="bg-[#F5F4F0] rounded-xl shadow-sm border border-[#E5E4E2] p-4">
+              <div className="bg-[#FAF9F5] rounded-xl shadow-sm border border-[#E5E4E2] p-4">
                 <div className="flex items-center justify-center min-h-[60px]">
                   {!isRecording ? (
                     <Button
@@ -247,23 +208,6 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex flex-wrap gap-2 mb-8">
-              {actionButtons.map((button, index) => {
-                const Icon = button.icon;
-                return (
-                  <Button
-                    key={index}
-                    variant="outline"
-                    className="bg-[#F5F4F0] border-[#E5E4E2] text-[#101010] hover:bg-[#EFEFEA] rounded-full"
-                  >
-                    <Icon className="w-4 h-4 mr-2" />
-                    {button.label}
-                  </Button>
-                );
-              })}
-            </div>
-
             {/* Project Setup Section */}
             <div className="mt-12">
               <h2 className="text-xl font-semibold text-[#101010] mb-6">
@@ -275,7 +219,7 @@ export default function Dashboard() {
                   return (
                     <div
                       key={index}
-                      className="bg-[#F5F4F0] rounded-xl p-6 border border-[#E5E4E2] shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                      className="bg-[#FAF9F5] rounded-xl p-6 border border-[#E5E4E2] shadow-sm hover:shadow-md transition-shadow cursor-pointer"
                     >
                       <div className="w-12 h-12 rounded-lg border-2 border-[#E5E4E2] flex items-center justify-center mb-4">
                         <Icon className="w-6 h-6 text-[#4A4A4A]" />
