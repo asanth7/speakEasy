@@ -147,12 +147,12 @@ export default function Home() {
                 transform: 'skew(-2deg,-4deg)',
                 transformOrigin: 'center center',
                 clipPath: 'url(#barrel-curve)',
-                color: 'rgba(251, 225, 203, 0.7)', // Transparent warm yellowish-orange
+                color: 'rgba(16, 16, 16, 0.3)', // Transparent darker grey
                 textShadow: `
-                  0 0 10px rgba(251, 225, 203, 0.5),
-                  0 0 20px rgba(251, 225, 203, 0.3),
-                  0 2px 4px rgba(0, 0, 0, 0.3),
-                  0 0 0 1px rgba(251, 225, 203, 0.2)
+                  0 0 10px rgba(16, 16, 16, 0.6),
+                  0 0 20px rgba(16, 16, 16, 0.4),
+                  0 2px 4px rgba(0, 0, 0, 0.4),
+                  0 0 0 1px rgba(16, 16, 16, 0.3)
                 `,
                 backdropFilter: 'blur(1px)',
                 WebkitBackdropFilter: 'blur(1px)',
