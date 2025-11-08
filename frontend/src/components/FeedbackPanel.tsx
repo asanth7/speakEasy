@@ -1,5 +1,5 @@
 import { TrendingUp, AlertCircle, CheckCircle2, Eye } from 'lucide-react';
-import { Session } from '../App';
+import type { Session } from '../types';
 import { Progress } from './ui/progress';
 
 interface FeedbackPanelProps {

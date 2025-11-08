@@ -1,5 +1,5 @@
 import { Users, Scale, BookOpen, Trophy, Presentation } from 'lucide-react';
-import { SpeechType } from '../App';
+import type { SpeechType } from '../types';
 
 interface SpeechTypeSelectorProps {
   selectedType: SpeechType;

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Mic, Square, Video, VideoOff, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
-import { SpeechType, Session } from '../App';
+import type { SpeechType, Session } from '../types';
 
 interface RecordingControlsProps {
   isRecording: boolean;
