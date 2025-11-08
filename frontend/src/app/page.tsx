@@ -67,7 +67,7 @@ export default function Home() {
         {/* Hero Content */}
         <div className="relative z-10 container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-slate-900 mb-6 leading-tight">
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-light text-slate-900 mb-6 leading-tight tracking-tight [font-family:var(--font-playfair),serif]">
               Find Your Calm in the{' '}
               <span className="italic">Complexity</span>
             </h1>
@@ -75,48 +75,39 @@ export default function Home() {
             <p className="text-lg md:text-xl text-slate-700 mb-10 max-w-2xl mx-auto leading-relaxed">
               Our platform handles the intricate data and workflows so you can stop firefighting and start focusing on what matters.
             </p>
+          </div>
+        </div>
 
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Link href="/dashboard">
-                <Button 
-                  size="lg" 
-                  className="bg-slate-900 text-white hover:bg-slate-800 text-base px-8 py-6 rounded-lg min-w-[200px]"
-                >
-                  Book a Free Demo
-                </Button>
-              </Link>
-              <Link href="/dashboard">
-                <Button 
-                  size="lg" 
-                  variant="outline" 
-                  className="bg-white/90 border-slate-300 text-slate-900 hover:bg-white text-base px-8 py-6 rounded-lg min-w-[200px]"
-                >
-                  Watch Overview
-                </Button>
-              </Link>
+        {/* CTA Button - Positioned inside the monitor screen with curvature warp */}
+        <div className="absolute z-10 bottom-[48%] left-1/2 -translate-x-1/2">
+          <Link href="/dashboard">
+            <div
+              style={{
+                transform: 'perspective(400px) rotateX(20deg)',
+                transformStyle: 'preserve-3d',
+                clipPath: 'ellipse(90% 75% at 50% 50%)',
+              }}
+            >
+              <Button 
+                size="lg" 
+                className="bg-slate-900 text-white hover:bg-slate-800 text-base px-8 py-6 rounded-lg min-w-[200px] shadow-2xl"
+                style={{
+                  transform: 'scaleY(0.75) scaleX(0.92)',
+                  transformOrigin: 'center center',
+                  filter: 'drop-shadow(0 8px 16px rgba(0, 0, 0, 0.5))',
+                  borderRadius: '12px',
+                }}
+              >
+                Get Started
+              </Button>
             </div>
-          </div>
+          </Link>
         </div>
       </div>
 
-      {/* Trusted By Section */}
-      <div className="relative z-10 bg-white/95 backdrop-blur-sm border-t border-slate-200 py-12">
-        <div className="container mx-auto px-4">
-          <p className="text-center text-slate-600 text-sm font-medium mb-8">
-            Trusted By Teams At
-          </p>
-          
-          {/* Company Logos - Using placeholder text for now */}
-          <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12 opacity-60">
-            <div className="text-slate-400 font-semibold text-lg">Loom</div>
-            <div className="text-slate-400 font-semibold text-lg">Segment</div>
-            <div className="text-slate-400 font-semibold text-lg">Notion</div>
-            <div className="text-slate-400 font-semibold text-lg">Stripe</div>
-            <div className="text-slate-400 font-semibold text-lg">Discord</div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
+
+
+
