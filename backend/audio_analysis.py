@@ -72,7 +72,7 @@ def analyze_speech(wav_file):
     # print(f"Pitch: mean = {pitch_mean:.2f} Hz, SD = {pitch_sd:.2f} Hz, SD (semitones) = {pitch_sd_st:.2f} st ({pitch_assessment})")
     # print(f"Loudness: mean = {loudness_db:.2f} dB, SD = {loudness_sd:.2f} dB ({loudness_assessment})")
     # print(f"Approx. speech rate: {words_per_minute:.2f} WPM ({rate_assessment})")
-    return f"Based on your speech, you {pitch_assessment}. Also, you are speaking {rate_assessment} and you are {loudness_assessment}.")
+    return f"Based on your speech, you {pitch_assessment}. Also, you are speaking {rate_assessment} and you are {loudness_assessment}."
 
 # Example usage
 # analyze_speech("./audiotests/recording_with_issues.wav")
