@@ -1,72 +1,63 @@
-import asyncio, base64, json
-import sounddevice as sd
-import websockets
-import pyaudio, soundfile as sf
-import modal, torch
-import numpy as np
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, File
-from starlette.websockets import WebSocketState
-from starlette.websockets import WebSocketDisconnect
-from starlette.websockets import WebSocketState
-from starlette.websockets import WebSocketState
-import numpy as np
+from typing import Optional
 
-app = modal.App("parakeet-ws")
-cache = modal.Volume.from_name("parakeet-cache", create_if_missing=True)
+import modal
+
+MODEL_DIR = "/model"
+MODEL_NAME = "openai/whisper-large-v3"
+MODEL_REVISION = "afda370583db9c5359511ed5d989400a6199dfe1"
+
 image = (
-    modal.Image.from_registry("nvidia/cuda:12.4.0-cudnn-devel-ubuntu22.04", add_python="3.11")
-    .env({"HF_HOME": "/cache", "TORCH_HOME": "/cache"})
-    .apt_install("ffmpeg")
-    .pip_install("nemo_toolkit[asr]==2.3.0", "torch==2.2.2", "fastapi", "soundfile", "numpy<2")
+    modal.Image.debian_slim(python_version="3.11")
+    .pip_install(
+        "torch==2.5.1",
+        "transformers==4.47.1",
+        "hf-transfer==0.1.8",
+        "huggingface_hub==0.27.0",
+        "librosa==0.10.2",
+        "soundfile==0.12.1",
+        "accelerate==1.2.1",
+        "datasets==3.2.0",
+    )
+    # Use the barebones `hf-transfer` package for maximum download speeds. No progress bar, but expect 700MB/s.
+    .env({"HF_HUB_ENABLE_HF_TRANSFER": "1", "HF_HUB_CACHE": MODEL_DIR})
 )
 
-SR = 16_000
+model_cache = modal.Volume.from_name("hf-hub-cache", create_if_missing=True)
+app = modal.App(
+    "example-batched-whisper",
+    image=image,
+)
 
-@app.cls(volumes={"/cache": cache}, gpu="A100", image=image, concurrency_limit=5)
-class Transcriber:
-    def __init__(self):
-        self.api = FastAPI()
-
-        @self.api.websocket("/ws")
-        async def ws_route(ws: WebSocket):
-            await ws.accept()
-            queue = asyncio.Queue()
-            listener = asyncio.create_task(self._recv(ws, queue))
-            worker = asyncio.create_task(self._run(queue, ws))
-            await asyncio.gather(listener, worker)
-
+@app.cls(gpu="a10g")
+class Model:
     @modal.enter()
-    def load(self):
-        import nemo.collections.asr as nemo_asr
-        self.model = nemo_asr.models.ASRModel.from_pretrained("nvidia/parakeet-tdt-0.6b-v3")
-        self.model.to("cuda").eval()
+    def load_model(self):
+        import torch, transformers
+        from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
+        self.processor = AutoProcessor.from_pretrained(MODEL_NAME)
+        self.model = AutoModelForSpeechSeq2Seq.from_pretrained(
+            MODEL_NAME,
+            torch_dtype=torch.float16,
+            low_cpu_mem_usage=True,
+            use_safetensors=True,
+        ).to("cuda")
+        self.pipeline = pipeline(
+            "automatic-speech-recognition",
+            model=self.model,
+            tokenizer=self.processor.tokenizer,
+            feature_extractor=self.processor.feature_extractor,
+            torch_dtype=torch.float16,
+            device="cuda",
+        )
 
-    async def _recv(self, ws, queue):
-        try:
-            while True:
-                msg = await ws.receive_text()
-                data = json.loads(msg)
-                if data.get("type") == "audio":
-                    queue.put_nowait(base64.b64decode(data["audio"]))
-        except WebSocketDisconnect:
-            queue.put_nowait(None)
+    @modal.method()
+    def transcribe_file(self, file_path: str):
+        return self.pipeline(file_path)
 
-    async def _run(self, queue, ws):
-        buffers = bytearray()
-        while True:
-            chunk = await queue.get()
-            if chunk is None:
-                break
-            buffers.extend(chunk)
-            if len(buffers) >= SR * 2 * 0.5:  # 0.5 s buffer
-                tensor = torch.from_numpy(
-                    np.frombuffer(buffers, dtype=np.int16).astype(np.float32) / 32768.0
-                )
-                buffers.clear()
-                with torch.inference_mode():
-                    text = self.model.transcribe([tensor])[0]
-                await ws.send_text(text)
 
-    @modal.asgi_app()
-    def app(self):
-        return self.api
+@app.local_entrypoint()
+def main(file_path: str = "audiotests/user_recording.wav"):
+    model = Model()
+    result = model.transcribe_file.remote(file_path)
+    print("Transcript:", result["text"])
+

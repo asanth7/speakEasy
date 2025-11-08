@@ -1,29 +1,27 @@
-# stt_stream.py
-import asyncio, base64, json, sounddevice as sd, websockets
+import sounddevice as sd
+import soundfile as sf
+import numpy as np
+import queue
 
-SR = 16_000
-CHUNK_MS = 100
-SAMPLES = SR * CHUNK_MS // 1000
-MODAL_WS = "wss://<modal-forward-url>/ws"
+SAMPLE_RATE = 16000
+CHANNELS = 1
+OUTPUT_FILE = "audiotests/user_recording.wav"
 
-async def stream():
-    async with websockets.connect(MODAL_WS) as ws:
-        await ws.send(json.dumps({"type": "start_client_session"}))
+q = queue.Queue()
 
-        stream = sd.InputStream(samplerate=SR, channels=1, dtype="int16")
-        stream.start()
+def callback(indata, frames, time, status):
+    if status:
+        print(status)
+    q.put(indata.copy())
 
-        async def reader():
-            async for msg in ws:
-                print("Transcript:", msg)
-
-        async def writer():
+# Open a stream that runs until you stop it
+with sf.SoundFile(OUTPUT_FILE, mode='w', samplerate=SAMPLE_RATE,
+                  channels=CHANNELS, subtype='PCM_16') as f:
+    with sd.InputStream(samplerate=SAMPLE_RATE, channels=CHANNELS,
+                        dtype='int16', callback=callback):
+        print("Recording... Press Ctrl+C to stop.")
+        try:
             while True:
-                frames, _ = stream.read(SAMPLES)
-                payload = base64.b64encode(frames.tobytes()).decode()
-                await ws.send(json.dumps({"type": "audio", "audio": payload}))
-
-        await asyncio.gather(reader(), writer())
-
-if __name__ == "__main__":
-    asyncio.run(stream())
+                f.write(q.get())
+        except KeyboardInterrupt:
+            print("\nRecording stopped.")
