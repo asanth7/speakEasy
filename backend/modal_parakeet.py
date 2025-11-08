@@ -3,7 +3,7 @@ from typing import Optional
 import modal
 from pathlib import Path
 import tempfile
-import ffmpeg
+# import ffmpeg
 
 MODEL_DIR = "/model"
 MODEL_NAME = "openai/whisper-large-v3"
@@ -70,3 +70,4 @@ def transcribe_audio(file_path: str = "audiotests/user_recording.wav"):
     result = Model().transcribe_bytes.remote(wav_bytes)
     return result["text"]
 
+# RUN COMMAND: python -m modal run backend.modal_parakeet --file-path audiotests/user_recording.wav

@@ -2,6 +2,7 @@ from modal_parakeet import transcribe_audio
 import os
 import openai
 from dotenv import load_dotenv
+import modal
 
 load_dotenv()
 
