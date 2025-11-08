@@ -141,42 +141,54 @@ export default function Dashboard() {
           const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
           const wavBlob = audioBufferToWav(audioBuffer);
           
-          // Send to backend API
+          // Create URL for playback immediately
+          const url = URL.createObjectURL(wavBlob);
+          setAudioUrl(url);
+          
+          // Show dashboard immediately with audio playback
+          setHasRecording(true);
+          
+          // Send to backend API for saving and transcription
           setIsTranscribing(true);
           const formData = new FormData();
           formData.append('audio', wavBlob, 'recording.wav');
           
-          const response = await fetch('http://localhost:5000/api/upload-audio', {
-            method: 'POST',
-            body: formData,
-          });
-          
-          if (response.ok) {
-            const result = await response.json();
-            console.log('WAV file saved:', result.message);
+          try {
+            const response = await fetch('http://localhost:5000/api/upload-audio', {
+              method: 'POST',
+              body: formData,
+            });
             
-            // Create URL for playback
-            const url = URL.createObjectURL(wavBlob);
-            setAudioUrl(url);
-            setAudioFilename(result.filename);
-            setTranscript(result.transcript || null);
-            setHasRecording(true);
-            
-            // Show transcription status
-            setIsTranscribing(false);
-            if (result.transcript) {
-              console.log('Transcript received:', result.transcript);
+            if (response.ok) {
+              const result = await response.json();
+              console.log('WAV file saved:', result.message);
+              
+              // Update filename and transcript
+              setAudioFilename(result.filename);
+              setTranscript(result.transcript || null);
+              
+              // Show transcription status
+              setIsTranscribing(false);
+              if (result.transcript) {
+                console.log('Transcript received:', result.transcript);
+              } else {
+                console.log('No transcript available');
+              }
             } else {
-              console.log('No transcript available');
+              setIsTranscribing(false);
+              const error = await response.json();
+              console.error('Error uploading audio:', error);
+              // Don't show alert, just log the error - dashboard is already shown
             }
-          } else {
+          } catch (fetchError) {
             setIsTranscribing(false);
-            const error = await response.json();
-            console.error('Error uploading audio:', error);
-            alert(`Error saving audio: ${error.error || 'Unknown error'}`);
+            console.error('Error uploading audio:', fetchError);
+            // Don't show alert, just log the error - dashboard is already shown
           }
         } catch (error) {
           console.error('Error converting to WAV:', error);
+          // Even if conversion fails, show dashboard with error message
+          setHasRecording(true);
           alert('Error converting audio to WAV format');
         }
         
