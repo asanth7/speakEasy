@@ -1,10 +1,16 @@
 import type { Metadata } from "next";
-import { Playfair_Display } from "next/font/google";
+import { Playfair_Display, JetBrains_Mono } from "next/font/google";
 import "../styles/globals.css";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
   variable: "--font-playfair",
+  display: "swap",
+});
+
+const geistMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-geist-mono",
   display: "swap",
 });
 
@@ -19,9 +25,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={playfair.variable}>
-      <body>{children}</body>
-    </html>
+      <html lang="en" className={`${playfair.variable} ${geistMono.variable}`}>
+        <body>{children}</body>
+      </html>
   );
 }
 
