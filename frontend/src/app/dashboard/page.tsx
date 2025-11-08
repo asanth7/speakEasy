@@ -118,17 +118,24 @@ export default function Dashboard() {
           const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
           const wavBlob = audioBufferToWav(audioBuffer);
           
-          // Create download link
-          const url = URL.createObjectURL(wavBlob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `recording-${new Date().toISOString().replace(/[:.]/g, '-')}.wav`;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
+          // Send to backend API
+          const formData = new FormData();
+          formData.append('audio', wavBlob, 'recording.wav');
           
-          console.log('WAV file downloaded');
+          const response = await fetch('http://localhost:5000/api/upload-audio', {
+            method: 'POST',
+            body: formData,
+          });
+          
+          if (response.ok) {
+            const result = await response.json();
+            console.log('WAV file saved:', result.message);
+            alert(`Audio saved successfully: ${result.filename}`);
+          } else {
+            const error = await response.json();
+            console.error('Error uploading audio:', error);
+            alert(`Error saving audio: ${error.error || 'Unknown error'}`);
+          }
         } catch (error) {
           console.error('Error converting to WAV:', error);
           alert('Error converting audio to WAV format');
