@@ -28,6 +28,8 @@ export default function Dashboard() {
   const [transcript, setTranscript] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [isTranscribing, setIsTranscribing] = useState(false);
+  const [selectedFormat, setSelectedFormat] = useState<string | null>(null);
+  const [selectedSpeech, setSelectedSpeech] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [audioDuration, setAudioDuration] = useState(0);
@@ -268,18 +270,18 @@ export default function Dashboard() {
   const projectCards = [
     {
       icon: Brain,
-      title: 'Study project',
-      description: 'Learn and master any subject'
+      title: 'Public forum',
+      description: 'Accessible debate format focusing on current events'
     },
     {
       icon: FileText,
-      title: 'Career project',
-      description: 'Find the next step for your career'
+      title: 'Policy debate',
+      description: 'In-depth analysis of policy proposals'
     },
     {
       icon: Search,
-      title: 'Research project',
-      description: 'Analyze and organize research'
+      title: 'Lincoln-Douglas',
+      description: 'One-on-one value-based philosophical debate'
     }
   ];
 
@@ -312,13 +314,17 @@ export default function Dashboard() {
           <h3 className="text-sm font-semibold text-[#101010] mb-3">Recent Speeches</h3>
           <div className="space-y-1">
             {recentSpeeches.map((speech, index) => (
-              <a
+              <button
                 key={index}
-                href="#"
-                className="block px-3 py-2 text-sm text-[#101010] hover:bg-[#FFFBF0] rounded-lg transition-colors truncate"
+                onClick={() => setSelectedSpeech(speech)}
+                className={`block w-full text-left px-3 py-2 text-sm rounded-lg transition-colors truncate ${
+                  selectedSpeech === speech
+                    ? 'bg-[#FFE5E0] text-[#E05038] font-medium'
+                    : 'text-[#101010] hover:bg-[#FFFBF0]'
+                }`}
               >
                 {speech}
-              </a>
+              </button>
             ))}
           </div>
         </div>
@@ -342,7 +348,219 @@ export default function Dashboard() {
 
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col">
-        {hasRecording ? (
+        {selectedSpeech === "Climate change speech" ? (
+          /* Climate Change Speech Dashboard */
+          <div className="flex-1 p-6 overflow-y-auto">
+            <div className="max-w-7xl mx-auto space-y-6">
+              <div className="flex items-center justify-between mb-6">
+                <h1 className="text-2xl font-bold text-[#101010]">Climate change speech</h1>
+                <Button
+                  onClick={() => setSelectedSpeech(null)}
+                  variant="outline"
+                  className="text-[#4A4A4A]"
+                >
+                  Back
+                </Button>
+              </div>
+
+              {/* Speech Text */}
+              <div className="bg-[#FFFBF0] rounded-xl border border-[#E5E4E2] shadow-sm p-6">
+                <h2 className="text-lg font-semibold text-[#101010] mb-4">Speech</h2>
+                <p className="text-sm text-[#4A4A4A] leading-relaxed">
+                  Climate change is a serious issue that needs to be addressed. We need to take action now, by encouraging our politicians to pursue policies that reduce greenhouse gas emissions and promote sustainable practices.
+                </p>
+              </div>
+
+              {/* Assessment */}
+              <div className="bg-[#FFFBF0] rounded-xl border border-[#E5E4E2] shadow-sm p-6">
+                <h2 className="text-lg font-semibold text-[#101010] mb-4">Assessment</h2>
+                <div className="space-y-3 text-sm text-[#4A4A4A]">
+                  <div>
+                    <span className="font-medium text-green-700">Strong:</span> Clear urgency and call to action ("Climate change is a serious issue…We need to take action now"). Good ethos and moral framing.
+                  </div>
+                  <div>
+                    <span className="font-medium text-red-700">Weak:</span> Far too general for policy debate—no plan text, no evidence, no mechanism, no impacts, no solvency, no weighing, no structure.
+                  </div>
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="bg-[#FFFBF0] rounded-xl border border-[#E5E4E2] shadow-sm p-6">
+                <h2 className="text-lg font-semibold text-[#101010] mb-4">Content</h2>
+                <div className="space-y-2 text-sm text-[#4A4A4A]">
+                  <p><span className="font-medium">Claims:</span> Present, but generic ("policies that reduce greenhouse gas emissions and promote sustainable practices").</p>
+                  <p><span className="font-medium">Missing:</span> Specific policy mechanism, actor, enforcement, funding; quantified harms/impacts; solvency warrants; inherency/uniqueness (why status quo fails); impact calculus (magnitude/probability/timeframe/reversibility).</p>
+                </div>
+              </div>
+
+              {/* Structure */}
+              <div className="bg-[#FFFBF0] rounded-xl border border-[#E5E4E2] shadow-sm p-6">
+                <h2 className="text-lg font-semibold text-[#101010] mb-4">Structure</h2>
+                <div className="space-y-2 text-sm text-[#4A4A4A]">
+                  <p>Lacks signposting and flowable components. No Plan → Advantages → Solvency → Impacts.</p>
+                  <p>No internal links from policy mechanism to outcomes.</p>
+                  <p className="font-medium">Suggest:</p>
+                  <ol className="list-decimal list-inside ml-4 space-y-1">
+                    <li>Framing/Harms</li>
+                    <li>Plan text</li>
+                    <li>Advantage 1 (Climate/Health)</li>
+                    <li>Advantage 2 (Economy/Security)</li>
+                    <li>Solvency</li>
+                    <li>Impact calculus</li>
+                    <li>Brief answers to likely DAs</li>
+                  </ol>
+                </div>
+              </div>
+
+              {/* Argumentation */}
+              <div className="bg-[#FFFBF0] rounded-xl border border-[#E5E4E2] shadow-sm p-6">
+                <h2 className="text-lg font-semibold text-[#101010] mb-4">Argumentation</h2>
+                <div className="space-y-2 text-sm text-[#4A4A4A]">
+                  <p>Unsupported assertions. No evidence or quantification.</p>
+                  <p>No comparative claims against alternatives (adaptation, geoengineering, incrementalism).</p>
+                  <p>Add warrants (how/why), numbers (GHG cuts, health co-benefits), and credible citations.</p>
+                </div>
+              </div>
+
+              {/* Grammar & Style */}
+              <div className="bg-[#FFFBF0] rounded-xl border border-[#E5E4E2] shadow-sm p-6">
+                <h2 className="text-lg font-semibold text-[#101010] mb-4">Grammar & Style</h2>
+                <div className="space-y-2 text-sm text-[#4A4A4A]">
+                  <p>Grammatically correct and concise, but abstract and cliché-heavy.</p>
+                  <p>Improve with concrete verbs, signposts, and vivid, specific numbers. Example: Replace "pursue policies that reduce emissions" with "enact an economy-wide carbon fee starting at $50/ton with a border adjustment to cut emissions 40% by 2035."</p>
+                </div>
+              </div>
+
+              {/* Tight upgrade */}
+              <div className="bg-[#FFFBF0] rounded-xl border border-[#E5E4E2] shadow-sm p-6">
+                <h2 className="text-lg font-semibold text-[#101010] mb-4">Tight upgrade (affirmative skeleton, flowable)</h2>
+                <div className="space-y-4 text-sm text-[#4A4A4A]">
+                  <div>
+                    <p className="font-medium mb-2">Resolutional framing:</p>
+                    <p>The USFG should adopt an economy-wide carbon price to rapidly reduce GHG emissions.</p>
+                  </div>
+                  <div>
+                    <p className="font-medium mb-2">Plan (example):</p>
+                    <p>The United States federal government should enact a carbon fee starting at $50 per metric ton of CO2e in 2026, increasing $10 annually, paired with a border carbon adjustment. 70% of revenue is rebated per capita; 30% funds transmission, storage, industrial decarbonization, and methane abatement. Implementation by Treasury and EPA; enforcement via IRS and Customs.</p>
+                  </div>
+                  <div>
+                    <p className="font-medium mb-2">Advantage 1—Climate + Health</p>
+                    <p className="ml-4"><span className="font-medium">Tag:</span> Prevents catastrophic warming and saves lives. IPCC AR6 (2023) finds deep cuts this decade are required for 1.5–2°C; NCA5 (2023) projects escalating US damages without faster mitigation. Health co-benefits from PM2.5 reductions avert tens of thousands of US deaths annually (Shindell et al., PNAS 2018).</p>
+                  </div>
+                  <div>
+                    <p className="font-medium mb-2">Advantage 2—Competitiveness + Energy Security</p>
+                    <p className="ml-4"><span className="font-medium">Tag:</span> Carbon price + border adjustment spurs clean tech, protects industry, and reduces import emissions leakage (Nordhaus, PNAS 2015; Bayer & Aklin, PNAS 2020 on policy-driven EU ETS cuts).</p>
+                  </div>
+                  <div>
+                    <p className="font-medium mb-2">Solvency</p>
+                    <p className="ml-4"><span className="font-medium">Tag:</span> Carbon pricing works. Cross-national analyses show carbon pricing reduces CO2 1–2% per year on average (Rafaty, Dolphin & Pretis, Nat. Clim. Change 2020). British Columbia's tax cut fuel use and emissions with limited GDP impact (Murray & Rivers, Energy Policy 2015). EU ETS cut covered emissions and drove low-carbon innovation (Calel & Dechezleprêtre, Rev. Econ. Stat. 2016; Bayer & Aklin, PNAS 2020).</p>
+                  </div>
+                  <div>
+                    <p className="font-medium mb-2">Impact calculus</p>
+                    <ul className="ml-4 space-y-1 list-disc list-inside">
+                      <li><span className="font-medium">Magnitude:</span> Trillions in damages (Hsiang et al., Science 2017). Mortality effects substantial (Carleton et al., QJE 2020).</li>
+                      <li><span className="font-medium">Probability:</span> High per IPCC AR6; near-term methane cuts amplify benefits (Ocko et al., ERL 2021).</li>
+                      <li><span className="font-medium">Timeframe:</span> Early action avoids lock-in; co-benefits immediate via cleaner air.</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              {/* What to say in the round */}
+              <div className="bg-[#FFFBF0] rounded-xl border border-[#E5E4E2] shadow-sm p-6">
+                <h2 className="text-lg font-semibold text-[#101010] mb-4">What to say in the round (concise script)</h2>
+                <div className="space-y-2 text-sm text-[#4A4A4A]">
+                  <p><span className="font-medium">Harms:</span> "US on track to miss 1.5–2°C pathways; rising extremes, mortality, and GDP losses are already observed."</p>
+                  <p><span className="font-medium">Plan:</span> "Pass a rising carbon fee with border adjustment; rebate most revenue; invest rest in grid and industry."</p>
+                  <p><span className="font-medium">Solvency:</span> "Pricing changes behavior and investment; robust empirical record."</p>
+                  <p><span className="font-medium">Impacts:</span> "Cuts emissions fast, saves lives now via cleaner air, and secures US competitiveness."</p>
+                  <p><span className="font-medium">Weigh:</span> "High magnitude, high probability, irreversible tipping risks—prefer mitigation now."</p>
+                </div>
+              </div>
+
+              {/* Likely negative hits */}
+              <div className="bg-[#FFFBF0] rounded-xl border border-[#E5E4E2] shadow-sm p-6">
+                <h2 className="text-lg font-semibold text-[#101010] mb-4">Likely negative hits and quick answers</h2>
+                <div className="space-y-3 text-sm text-[#4A4A4A]">
+                  <div>
+                    <p className="font-medium">Topicality/Vagueness:</p>
+                    <p className="ml-4">"Original speech lacked a plan." <span className="font-medium">Answer:</span> Present the precise plan text above; clarify agent, enforcement, funding.</p>
+                  </div>
+                  <div>
+                    <p className="font-medium">Solvency deficit:</p>
+                    <p className="ml-4">"Carbon pricing too weak/slow." <span className="font-medium">Answer:</span> Rising price + BCA + investment tranche; cite cross-national reductions and EU ETS results; permutation with sectoral rules if needed.</p>
+                  </div>
+                  <div>
+                    <p className="font-medium">Econ/Jobs DA:</p>
+                    <p className="ml-4">"Costs, recession, regressive." <span className="font-medium">Answer:</span> Dividend offsets regressivity; macro effects modest; clean-tech job growth; SCC ~ $185/ton (Rennert et al., Nature 2022) shows benefits exceed costs.</p>
+                  </div>
+                  <div>
+                    <p className="font-medium">Leakage/Free rider:</p>
+                    <p className="ml-4">"US action futile." <span className="font-medium">Answer:</span> Border adjustment internalizes imports; climate clubs raise global coverage (Nordhaus 2015).</p>
+                  </div>
+                  <div>
+                    <p className="font-medium">Reliability/Blackouts:</p>
+                    <p className="ml-4">"Clean transition threatens grid." <span className="font-medium">Answer:</span> Revenue funds transmission and storage; NREL studies show reliable high-renewable grids with adequate transmission/storage and firm low-carbon resources.</p>
+                  </div>
+                  <div>
+                    <p className="font-medium">Politics DA:</p>
+                    <p className="ml-4">"Unpopular; midterms risk." <span className="font-medium">Answer:</span> Broad voter support for rebates and domestic industry protection; divided-government politics DA is low uniqueness/low link—plus bipartisan interest in BCAs.</p>
+                  </div>
+                  <div>
+                    <p className="font-medium">Adaptation CP:</p>
+                    <p className="ml-4">"Adapt instead." <span className="font-medium">Answer:</span> Mitigation reduces need and cost of adaptation; adaptation alone can't manage tail risks or ocean acidification.</p>
+                  </div>
+                  <div>
+                    <p className="font-medium">EJ critique:</p>
+                    <p className="ml-4">"Pricing can create hotspots." <span className="font-medium">Answer:</span> Include co-pollutant monitoring, targeted investments in fence-line communities, and methane rules; evidence of health co-benefits concentrated in high-exposure areas.</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Concrete stylistic tweaks */}
+              <div className="bg-[#FFFBF0] rounded-xl border border-[#E5E4E2] shadow-sm p-6">
+                <h2 className="text-lg font-semibold text-[#101010] mb-4">Concrete stylistic tweaks</h2>
+                <ul className="space-y-1 text-sm text-[#4A4A4A] list-disc list-inside ml-4">
+                  <li>Add signposting ("Contention 1: Harms… Contention 2: Plan…").</li>
+                  <li>Use numbers and citations in taglines.</li>
+                  <li>End with a clear voting issue: "Vote aff to prevent irreversible harms and secure immediate health and economic benefits."</li>
+                </ul>
+              </div>
+
+              {/* Potential alternative plan options */}
+              <div className="bg-[#FFFBF0] rounded-xl border border-[#E5E4E2] shadow-sm p-6">
+                <h2 className="text-lg font-semibold text-[#101010] mb-4">Potential alternative plan options (pick one and build evidence)</h2>
+                <div className="space-y-2 text-sm text-[#4A4A4A]">
+                  <p><span className="font-medium">Clean Electricity Standard:</span> 80–100% clean power by 2035 with credits for firm low-carbon (nuclear, CCS). Pair with transmission permitting and capacity markets.</p>
+                  <p><span className="font-medium">Methane package:</span> Rapid oil/gas methane controls + LDAR + plugging orphan wells for near-term warming benefits.</p>
+                </div>
+              </div>
+
+              {/* High-quality sources */}
+              <div className="bg-[#FFFBF0] rounded-xl border border-[#E5E4E2] shadow-sm p-6">
+                <h2 className="text-lg font-semibold text-[#101010] mb-4">High-quality sources to strengthen the case</h2>
+                <ul className="space-y-1 text-sm text-[#4A4A4A] list-disc list-inside ml-4">
+                  <li>IPCC AR6 Synthesis Report (2023) — State of climate risks and mitigation pathways.</li>
+                  <li>US Fifth National Climate Assessment (2023) — US-specific impacts and sectoral risks.</li>
+                  <li>Global Carbon Budget (Global Carbon Project, 2023) — Emissions trends and remaining carbon budget.</li>
+                  <li>National Academies: Accelerating Decarbonization in the U.S. Energy System (2021) and subsequent 2023 research agenda — Feasible pathways, policy toolkit.</li>
+                  <li>Rafaty, Dolphin & Pretis (2020), Nature Climate Change — Empirical evidence that carbon pricing cuts emissions.</li>
+                  <li>Murray & Rivers (2015), Energy Policy — British Columbia carbon tax outcomes and design.</li>
+                  <li>Bayer & Aklin (2020), PNAS — EU ETS reduced emissions despite low prices.</li>
+                  <li>Calel & Dechezleprêtre (2016), Review of Economics and Statistics — EU ETS induced low-carbon innovation.</li>
+                  <li>Hsiang et al. (2017), Science — US economic damages from warming.</li>
+                  <li>Carleton et al. (2020), QJE — Global mortality consequences of climate change.</li>
+                  <li>Rennert et al. (2022), Nature — Updated, higher social cost of carbon (~$185/ton).</li>
+                  <li>Ocko et al. (2021), Environmental Research Letters — Near-term climate payoff of methane and co-pollutant cuts.</li>
+                  <li>NREL Storage Futures Study (2021) and high-renewables reliability studies (2021–2023) — Grid reliability with high clean shares.</li>
+                  <li>DOE National Transmission Needs Study (2023) — Transmission expansion imperative.</li>
+                  <li>Cushing et al. (2018), PNAS — Equity concerns in cap-and-trade; use to preempt EJ critiques and justify safeguards.</li>
+                  <li>Nordhaus (2015), PNAS — Climate clubs and border adjustments to overcome free-riding.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        ) : hasRecording ? (
           /* Dashboard View */
           <div className="flex-1 p-6">
             <div className="max-w-7xl mx-auto">
@@ -484,20 +702,34 @@ export default function Dashboard() {
               {/* Project Setup Section */}
               <div className="mt-12">
                 <h2 className="text-xl font-semibold text-[#101010] mb-6">
-                  Set up Speakeasy for your classes, career, and research
+                  Choose your debate format
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {projectCards.map((card, index) => {
                     const Icon = card.icon;
+                    const isSelected = selectedFormat === card.title;
                     return (
                       <div
                         key={index}
-                        className="bg-[#FFFBF0] rounded-xl p-6 border border-[#E5E4E2] shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                        onClick={() => setSelectedFormat(card.title)}
+                        className={`bg-[#FFFBF0] rounded-xl p-6 border-2 transition-all cursor-pointer ${
+                          isSelected
+                            ? 'border-[#E05038] shadow-md bg-[#FFF8F0]'
+                            : 'border-[#E5E4E2] shadow-sm hover:shadow-md hover:border-[#D5D4D2]'
+                        }`}
                       >
-                        <div className="w-12 h-12 rounded-lg border-2 border-[#E5E4E2] flex items-center justify-center mb-4">
-                          <Icon className="w-6 h-6 text-[#4A4A4A]" />
+                        <div className={`w-12 h-12 rounded-lg border-2 flex items-center justify-center mb-4 transition-colors ${
+                          isSelected
+                            ? 'border-[#E05038] bg-[#FFE5E0]'
+                            : 'border-[#E5E4E2] bg-transparent'
+                        }`}>
+                          <Icon className={`w-6 h-6 transition-colors ${
+                            isSelected ? 'text-[#E05038]' : 'text-[#4A4A4A]'
+                          }`} />
                         </div>
-                        <h3 className="text-lg font-semibold text-[#101010] mb-2">{card.title}</h3>
+                        <h3 className={`text-lg font-semibold mb-2 transition-colors ${
+                          isSelected ? 'text-[#E05038]' : 'text-[#101010]'
+                        }`}>{card.title}</h3>
                         <p className="text-sm text-[#4A4A4A]">{card.description}</p>
                       </div>
                     );
